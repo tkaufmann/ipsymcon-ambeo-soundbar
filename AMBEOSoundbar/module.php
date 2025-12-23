@@ -40,6 +40,33 @@ class AMBEOSoundbar extends IPSModuleStrict
     }
 
     /**
+     * GetConfigurationForm() - Called when configuration form is opened
+     */
+    public function GetConfigurationForm(): string
+    {
+        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+
+        // Try to get current model from API
+        $host = $this->ReadPropertyString('Host');
+        if (!empty($host)) {
+            $productName = $this->apiGetData('settings:/network/productName');
+            if ($productName !== null && isset($productName['value']['string_'])) {
+                $model = $productName['value']['string_'];
+
+                // Update DetectedModel label in form
+                foreach ($form['elements'] as &$element) {
+                    if (isset($element['name']) && $element['name'] === 'DetectedModel') {
+                        $element['label'] = $model;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return json_encode($form);
+    }
+
+    /**
      * ApplyChanges() - Called when configuration changes
      */
     public function ApplyChanges(): void
