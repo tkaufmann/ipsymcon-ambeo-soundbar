@@ -48,15 +48,21 @@ class AMBEOSoundbar extends IPSModuleStrict
 
         // Try to get current model from API
         $host = $this->ReadPropertyString('Host');
+        $this->SendDebug('GetConfigurationForm', "Host: {$host}", 0);
+
         if (!empty($host)) {
             $productName = $this->apiGetData('settings:/network/productName');
+            $this->SendDebug('GetConfigurationForm', "API Response: " . json_encode($productName), 0);
+
             if ($productName !== null && isset($productName['value']['string_'])) {
                 $model = $productName['value']['string_'];
+                $this->SendDebug('GetConfigurationForm', "Detected model: {$model}", 0);
 
                 // Update DetectedModel label in form
                 foreach ($form['elements'] as &$element) {
                     if (isset($element['name']) && $element['name'] === 'DetectedModel') {
                         $element['label'] = $model;
+                        $this->SendDebug('GetConfigurationForm', "Updated DetectedModel label", 0);
                         break;
                     }
                 }
