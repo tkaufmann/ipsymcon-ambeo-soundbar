@@ -444,11 +444,35 @@ class AMBEOSoundbar extends IPSModuleStrict
     // ==================== API Methods ====================
 
     /**
+     * Resolve hostname to IP address
+     * AMBEO Soundbar requires IP in Host header, not hostname (returns 403 otherwise)
+     */
+    private function resolveHost(string $host): string
+    {
+        // If already an IP, return as-is
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return $host;
+        }
+
+        // Try to resolve hostname to IP
+        $ip = gethostbyname($host);
+
+        // gethostbyname returns the input if resolution fails
+        if ($ip === $host) {
+            $this->SendDebug('ResolveHost', "Failed to resolve hostname: {$host}", 0);
+            return $host; // Return original, let connection attempt fail with meaningful error
+        }
+
+        $this->SendDebug('ResolveHost', "Resolved {$host} → {$ip}", 0);
+        return $ip;
+    }
+
+    /**
      * API: getData
      */
     private function apiGetData(string $path, string $role = '@all'): ?array
     {
-        $host = $this->ReadPropertyString('Host');
+        $host = $this->resolveHost($this->ReadPropertyString('Host'));
         $nocache = (int)(microtime(true) * 1000);
 
         $url = "http://{$host}:" . self::API_PORT . "/api/getData?path=" . urlencode($path) . "&roles=" . urlencode($role) . "&_nocache={$nocache}";
@@ -471,7 +495,7 @@ class AMBEOSoundbar extends IPSModuleStrict
      */
     private function apiGetRows(string $path, int $from = 0, int $to = 20, string $role = '@all'): ?array
     {
-        $host = $this->ReadPropertyString('Host');
+        $host = $this->resolveHost($this->ReadPropertyString('Host'));
         $nocache = (int)(microtime(true) * 1000);
 
         $url = "http://{$host}:" . self::API_PORT . "/api/getRows?path=" . urlencode($path) . "&roles=" . urlencode($role) . "&from={$from}&to={$to}&_nocache={$nocache}";
@@ -494,7 +518,7 @@ class AMBEOSoundbar extends IPSModuleStrict
      */
     private function apiSetData(string $path, string $dataType, mixed $value, string $role = 'value'): bool
     {
-        $host = $this->ReadPropertyString('Host');
+        $host = $this->resolveHost($this->ReadPropertyString('Host'));
         $nocache = (int)(microtime(true) * 1000);
 
         $payload = [
