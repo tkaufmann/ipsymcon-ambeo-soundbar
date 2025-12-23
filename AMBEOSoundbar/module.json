@@ -1,0 +1,12 @@
+{
+  "id": "{B7E4D1A9-3C8F-4E2B-9A5D-7F1C6B8E4A2D}",
+  "name": "AMBEOSoundbar",
+  "type": 3,
+  "vendor": "Sennheiser",
+  "aliases": ["AMBEO Soundbar Plus", "AMBEO Soundbar Mini", "AMBEO Soundbar Max"],
+  "url": "",
+  "parentRequirements": [],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "AMB"
+}

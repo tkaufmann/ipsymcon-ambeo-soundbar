@@ -1,0 +1,69 @@
+{
+  "elements": [
+    {
+      "type": "Label",
+      "label": "Sennheiser AMBEO Soundbar"
+    },
+    {
+      "type": "ValidationTextBox",
+      "name": "Host",
+      "caption": "Hostname / IP-Adresse"
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "UpdateInterval",
+      "caption": "Update-Intervall (Sekunden)",
+      "minimum": 1,
+      "maximum": 60,
+      "suffix": "Sekunden"
+    },
+    {
+      "type": "Label",
+      "label": " "
+    },
+    {
+      "type": "Label",
+      "label": "Erkanntes Modell:",
+      "bold": true
+    },
+    {
+      "type": "Label",
+      "name": "DetectedModel",
+      "caption": "Modell"
+    }
+  ],
+  "actions": [
+    {
+      "type": "Button",
+      "label": "Status aktualisieren",
+      "onClick": "AMB_UpdateStatus($id);"
+    }
+  ],
+  "status": [
+    {
+      "code": 101,
+      "icon": "inactive",
+      "caption": "Instanz wird erstellt..."
+    },
+    {
+      "code": 102,
+      "icon": "active",
+      "caption": "Soundbar verbunden"
+    },
+    {
+      "code": 200,
+      "icon": "error",
+      "caption": "Hostname/IP-Adresse nicht angegeben"
+    },
+    {
+      "code": 201,
+      "icon": "error",
+      "caption": "Verbindung fehlgeschlagen - Soundbar nicht erreichbar"
+    },
+    {
+      "code": 202,
+      "icon": "error",
+      "caption": "Ungültige Response von Soundbar"
+    }
+  ]
+}
