@@ -66,7 +66,7 @@ class AMBEOSoundbar extends IPSModuleStrict
         $this->SendDebug('AMBEO', "Detected model: {$model}", 0);
 
         // Store detected model for form display
-        $this->UpdateFormField('DetectedModel', 'caption', $model);
+        $this->UpdateFormField('DetectedModel', 'label', $model);
 
         // Initialize module based on model
         $this->InitializeModule($model);
