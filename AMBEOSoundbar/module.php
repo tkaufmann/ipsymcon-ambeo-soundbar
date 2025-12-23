@@ -126,9 +126,7 @@ class AMBEOSoundbar extends IPSModuleStrict
                     'Value' => $index,
                     'Caption' => $row['title'],
                     'IconActive' => false,
-                    'IconValue' => '',
-                    'ColorActive' => false,
-                    'ColorValue' => -1
+                    'IconValue' => ''
                 ];
                 $index++;
             }
@@ -146,9 +144,7 @@ class AMBEOSoundbar extends IPSModuleStrict
                     'Value' => $index,
                     'Caption' => $row['title'],
                     'IconActive' => false,
-                    'IconValue' => '',
-                    'ColorActive' => false,
-                    'ColorValue' => -1
+                    'IconValue' => ''
                 ];
                 $index++;
             }
@@ -165,20 +161,20 @@ class AMBEOSoundbar extends IPSModuleStrict
         // Espresso uses integer IDs for sources
         // For now, use placeholders - would need actual getRows implementation
         $options = [
-            ['Value' => 0, 'Caption' => 'HDMI 1', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
-            ['Value' => 1, 'Caption' => 'HDMI 2', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
-            ['Value' => 2, 'Caption' => 'Optical', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
-            ['Value' => 3, 'Caption' => 'Bluetooth', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1]
+            ['Value' => 0, 'Caption' => 'HDMI 1', 'IconActive' => false, 'IconValue' => ''],
+            ['Value' => 1, 'Caption' => 'HDMI 2', 'IconActive' => false, 'IconValue' => ''],
+            ['Value' => 2, 'Caption' => 'Optical', 'IconActive' => false, 'IconValue' => ''],
+            ['Value' => 3, 'Caption' => 'Bluetooth', 'IconActive' => false, 'IconValue' => '']
         ];
         $this->SetVariablePresentation('Source', VARIABLE_PRESENTATION_ENUMERATION, $options);
 
         // Espresso presets (hardcoded)
         $options = [
-            ['Value' => 0, 'Caption' => 'Neutral', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
-            ['Value' => 1, 'Caption' => 'Movies', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
-            ['Value' => 2, 'Caption' => 'Sport', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
-            ['Value' => 3, 'Caption' => 'News', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
-            ['Value' => 4, 'Caption' => 'Music', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1]
+            ['Value' => 0, 'Caption' => 'Neutral', 'IconActive' => false, 'IconValue' => ''],
+            ['Value' => 1, 'Caption' => 'Movies', 'IconActive' => false, 'IconValue' => ''],
+            ['Value' => 2, 'Caption' => 'Sport', 'IconActive' => false, 'IconValue' => ''],
+            ['Value' => 3, 'Caption' => 'News', 'IconActive' => false, 'IconValue' => ''],
+            ['Value' => 4, 'Caption' => 'Music', 'IconActive' => false, 'IconValue' => '']
         ];
         $this->SetVariablePresentation('Preset', VARIABLE_PRESENTATION_ENUMERATION, $options);
     }
@@ -195,10 +191,12 @@ class AMBEOSoundbar extends IPSModuleStrict
             return;
         }
 
-        // IPS_SetVariableCustomPresentation expects an ARRAY with PRESENTATION constant
+        // IPS_SetVariableCustomPresentation expects:
+        // - PRESENTATION as GUID constant
+        // - OPTIONS as JSON-encoded string
         $presentationConfig = [
             'PRESENTATION' => $presentation,
-            'OPTIONS' => $options
+            'OPTIONS' => json_encode($options)
         ];
 
         IPS_SetVariableCustomPresentation($varID, $presentationConfig);
