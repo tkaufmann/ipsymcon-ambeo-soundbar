@@ -188,14 +188,27 @@ class AMBEOSoundbar extends IPSModuleStrict
      */
     private function SetVariablePresentation(string $ident, string $presentationGuid, array $options): void
     {
-        $varID = $this->GetIDForIdent($ident);
+        $varID = @$this->GetIDForIdent($ident);
 
+        if ($varID === false || $varID === 0) {
+            $this->SendDebug('SetVariablePresentation', "Variable '{$ident}' not found", 0);
+            return;
+        }
+
+        $optionsJson = json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $presentation = json_encode([
             'PRESENTATION' => $presentationGuid,
-            'OPTIONS' => json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+            'OPTIONS' => $optionsJson
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        IPS_SetVariableCustomPresentation($varID, $presentation);
+        $this->SendDebug('SetVariablePresentation', "VarID: {$varID}, Presentation length: " . strlen($presentation), 0);
+
+        try {
+            IPS_SetVariableCustomPresentation($varID, $presentation);
+        } catch (Exception $e) {
+            $this->SendDebug('SetVariablePresentation', "Error: " . $e->getMessage(), 0);
+            throw $e;
+        }
     }
 
     /**
