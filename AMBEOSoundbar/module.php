@@ -190,12 +190,12 @@ class AMBEOSoundbar extends IPSModuleStrict
     {
         $varID = $this->GetIDForIdent($ident);
 
-        $presentation = [
+        $presentation = json_encode([
             'PRESENTATION' => $presentationGuid,
-            'OPTIONS' => json_encode($options)
-        ];
+            'OPTIONS' => json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        IPS_SetVariableCustomPresentation($varID, json_encode($presentation));
+        IPS_SetVariableCustomPresentation($varID, $presentation);
     }
 
     /**
