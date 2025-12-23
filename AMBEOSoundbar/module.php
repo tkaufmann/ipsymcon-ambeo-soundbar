@@ -44,7 +44,7 @@ class AMBEOSoundbar extends IPSModuleStrict
      */
     public function GetConfigurationForm(): string
     {
-        $jsonForm = json_decode(parent::GetConfigurationForm(), true);
+        $jsonForm = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
 
         // Try to get current model from API
         $host = $this->ReadPropertyString('Host');
