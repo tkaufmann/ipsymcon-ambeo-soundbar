@@ -133,7 +133,7 @@ class AMBEOSoundbar extends IPSModuleStrict
                 $index++;
             }
 
-            $this->SetVariablePresentation('Source', '{52D9E126-D7D2-2CBB-5E62-4CF7BA7C5D82}', $options);
+            $this->SetVariablePresentation('Source', VARIABLE_PRESENTATION_ENUMERATION, $options);
         }
 
         // Get available presets
@@ -153,7 +153,7 @@ class AMBEOSoundbar extends IPSModuleStrict
                 $index++;
             }
 
-            $this->SetVariablePresentation('Preset', '{52D9E126-D7D2-2CBB-5E62-4CF7BA7C5D82}', $options);
+            $this->SetVariablePresentation('Preset', VARIABLE_PRESENTATION_ENUMERATION, $options);
         }
     }
 
@@ -170,7 +170,7 @@ class AMBEOSoundbar extends IPSModuleStrict
             ['Value' => 2, 'Caption' => 'Optical', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
             ['Value' => 3, 'Caption' => 'Bluetooth', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1]
         ];
-        $this->SetVariablePresentation('Source', '{52D9E126-D7D2-2CBB-5E62-4CF7BA7C5D82}', $options);
+        $this->SetVariablePresentation('Source', VARIABLE_PRESENTATION_ENUMERATION, $options);
 
         // Espresso presets (hardcoded)
         $options = [
@@ -180,13 +180,13 @@ class AMBEOSoundbar extends IPSModuleStrict
             ['Value' => 3, 'Caption' => 'News', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1],
             ['Value' => 4, 'Caption' => 'Music', 'IconActive' => false, 'IconValue' => '', 'ColorActive' => false, 'ColorValue' => -1]
         ];
-        $this->SetVariablePresentation('Preset', '{52D9E126-D7D2-2CBB-5E62-4CF7BA7C5D82}', $options);
+        $this->SetVariablePresentation('Preset', VARIABLE_PRESENTATION_ENUMERATION, $options);
     }
 
     /**
      * Set variable custom presentation
      */
-    private function SetVariablePresentation(string $ident, string $presentationGuid, array $options): void
+    private function SetVariablePresentation(string $ident, string $presentation, array $options): void
     {
         $varID = @$this->GetIDForIdent($ident);
 
@@ -195,13 +195,13 @@ class AMBEOSoundbar extends IPSModuleStrict
             return;
         }
 
-        // IPS_SetVariableCustomPresentation expects an ARRAY, not a JSON string!
-        $presentation = [
-            'PRESENTATION' => $presentationGuid,
+        // IPS_SetVariableCustomPresentation expects an ARRAY with PRESENTATION constant
+        $presentationConfig = [
+            'PRESENTATION' => $presentation,
             'OPTIONS' => $options
         ];
 
-        IPS_SetVariableCustomPresentation($varID, $presentation);
+        IPS_SetVariableCustomPresentation($varID, $presentationConfig);
     }
 
     /**
