@@ -447,7 +447,7 @@ class AMBEOSoundbar extends IPSModuleStrict
         $host = $this->ReadPropertyString('Host');
         $nocache = (int)(microtime(true) * 1000);
 
-        $url = "http://{$host}:" . self::API_PORT . "/fsapi/GET/{$path}?roles=" . urlencode($role) . "&_nocache={$nocache}";
+        $url = "http://{$host}:" . self::API_PORT . "/api/getData?path=" . urlencode($path) . "&roles=" . urlencode($role) . "&_nocache={$nocache}";
 
         $response = $this->httpGet($url);
         if ($response === null) {
@@ -470,7 +470,7 @@ class AMBEOSoundbar extends IPSModuleStrict
         $host = $this->ReadPropertyString('Host');
         $nocache = (int)(microtime(true) * 1000);
 
-        $url = "http://{$host}:" . self::API_PORT . "/fsapi/GET_ROWS/{$path}/{$from}/{$to}?roles=" . urlencode($role) . "&_nocache={$nocache}";
+        $url = "http://{$host}:" . self::API_PORT . "/api/getRows?path=" . urlencode($path) . "&roles=" . urlencode($role) . "&from={$from}&to={$to}&_nocache={$nocache}";
 
         $response = $this->httpGet($url);
         if ($response === null) {
@@ -498,7 +498,7 @@ class AMBEOSoundbar extends IPSModuleStrict
             $dataType => $value
         ];
 
-        $url = "http://{$host}:" . self::API_PORT . "/fsapi/SET/{$path}?roles=" . urlencode($role) . "&value=" . urlencode(json_encode($payload)) . "&_nocache={$nocache}";
+        $url = "http://{$host}:" . self::API_PORT . "/api/setData?path=" . urlencode($path) . "&roles=" . urlencode($role) . "&value=" . urlencode(json_encode($payload)) . "&_nocache={$nocache}";
 
         $response = $this->httpGet($url);
 
