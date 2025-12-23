@@ -27,6 +27,14 @@ class AMBEOSoundbar extends IPSModuleStrict
         $this->RegisterPropertyString('Host', '');
         $this->RegisterPropertyInteger('UpdateInterval', 5);
 
+        // Register custom input names
+        $this->RegisterPropertyString('CustomName_hdmiarc', '');
+        $this->RegisterPropertyString('CustomName_hdmi1', '');
+        $this->RegisterPropertyString('CustomName_hdmi2', '');
+        $this->RegisterPropertyString('CustomName_spdif', '');
+        $this->RegisterPropertyString('CustomName_aux', '');
+        $this->RegisterPropertyString('CustomName_bluetooth', '');
+
         // Register timer
         $this->RegisterTimer('UpdateStatus', 0, 'AMB_UpdateStatus($_IPS[\'TARGET\']);');
     }
@@ -122,9 +130,15 @@ class AMBEOSoundbar extends IPSModuleStrict
                 if (isset($row['disabled']) && $row['disabled']) {
                     continue; // Skip disabled sources (e.g., Spotify)
                 }
+
+                // Check for custom name, fallback to original title
+                $inputId = $row['id'] ?? '';
+                $customName = $this->ReadPropertyString("CustomName_{$inputId}");
+                $displayName = !empty($customName) ? $customName : $row['title'];
+
                 $options[] = [
                     'Value' => $index,
-                    'Caption' => $row['title'],
+                    'Caption' => $displayName,
                     'IconActive' => false,
                     'IconValue' => ''
                 ];

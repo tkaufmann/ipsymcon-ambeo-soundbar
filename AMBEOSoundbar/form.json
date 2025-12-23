@@ -18,6 +18,47 @@
       "suffix": "Sekunden"
     },
     {
+      "type": "ExpansionPanel",
+      "caption": "Namen der Eingänge überschreiben",
+      "items": [
+        {
+          "type": "Label",
+          "label": "Leer lassen für Standardnamen",
+          "italic": true
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "CustomName_hdmiarc",
+          "caption": "HDMI TV"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "CustomName_hdmi1",
+          "caption": "HDMI 1"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "CustomName_hdmi2",
+          "caption": "HDMI 2"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "CustomName_spdif",
+          "caption": "Optisch"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "CustomName_aux",
+          "caption": "AUX"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "CustomName_bluetooth",
+          "caption": "Bluetooth"
+        }
+      ]
+    },
+    {
       "type": "Label",
       "label": " "
     },
