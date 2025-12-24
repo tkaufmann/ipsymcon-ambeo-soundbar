@@ -101,12 +101,17 @@ AMB_SetAMBEOMode(12345, true);
 AMB_UpdateStatus(12345);
 ```
 
+### Performance
+
+- **Eingänge und Presets werden gecached:** Listen werden einmal beim Start geladen
+- **Cache-Refresh:** Bei Neustart, Konfigurationsänderung oder IP-Symcon Neustart
+- **API-Traffic:** Standard-Update-Intervall 10 Sekunden (~48 Requests/Minute)
+
 ## Netzwerk-Anforderungen
 
 - **Soundbar muss im lokalen Netzwerk erreichbar sein**
 - **Port 80** (HTTP) muss offen sein
 - **Keine Authentifizierung** erforderlich (lokale API)
-- **Hostname-Auflösung** wird automatisch durchgeführt
 
 ## Bekannte Einschränkungen
 
