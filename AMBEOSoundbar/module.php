@@ -48,10 +48,8 @@ class AMBEOSoundbar extends IPSModuleStrict
 
         // Try to get current model from API
         $host = $this->ReadPropertyString('Host');
-
         if (!empty($host)) {
-            $productName = $this->apiGetData('settings:/network/productName');
-
+            $productName = $this->apiGetData('settings:/system/productName');
             if ($productName !== null && isset($productName['value']['string_'])) {
                 $model = $productName['value']['string_'];
 
