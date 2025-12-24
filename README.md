@@ -114,25 +114,6 @@ AMB_UpdateStatus(12345);
 - **Kein Volume-Feedback während Änderung:** Update-Intervall bestimmt Reaktionszeit
 - **Custom-Namen nur in IP-Symcon:** AMBEO App zeigt weiterhin Original-Namen
 
-## Troubleshooting
-
-### Soundbar nicht erreichbar
-
-1. **IP/Hostname prüfen:** Ping von IP-Symcon Server aus testen
-2. **Firewall:** Port 80 muss offen sein
-3. **Netzwerk:** Soundbar im gleichen Subnetz wie IP-Symcon?
-
-### Keine Updates
-
-1. **Update-Intervall prüfen:** Mindestens 1 Sekunde
-2. **Logs prüfen:** Meldungen-Fenster der Instanz öffnen
-3. **Manueller Test:** "Status aktualisieren" Button klicken
-
-### Custom-Namen werden nicht übernommen
-
-1. **Instanz neu erstellt?** Properties werden nur bei Erstellung registriert
-2. **Übernehmen geklickt?** Änderungen erst nach Speichern aktiv
-
 ## API-Dokumentation
 
 Umfangreiche API-Dokumentation in `/docs`:
@@ -150,4 +131,4 @@ MIT License - siehe LICENSE Datei
 
 ## Credits
 
-Entwickelt durch Reverse Engineering der AMBEO Soundbar HTTP-API.
+Dieses Modul basiert auf der Vorarbeit des [Home Assistant AMBEO Soundbar Projekts](https://github.com/faizpuru/ha-ambeo_soundbar) von faizpuru.
