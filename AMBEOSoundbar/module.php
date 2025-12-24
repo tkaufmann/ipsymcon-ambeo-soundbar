@@ -16,6 +16,10 @@ class AMBEOSoundbar extends IPSModuleStrict
     private const API_PORT = 80;
     private const API_TIMEOUT = 5;
 
+    // Cache for source and preset lists (loaded once at startup)
+    private $cachedSources = null;
+    private $cachedPresets = null;
+
     /**
      * Create() - Called when instance is created
      */
@@ -25,7 +29,7 @@ class AMBEOSoundbar extends IPSModuleStrict
 
         // Register properties
         $this->RegisterPropertyString('Host', '');
-        $this->RegisterPropertyInteger('UpdateInterval', 5);
+        $this->RegisterPropertyInteger('UpdateInterval', 10);
 
         // Register custom input names
         $this->RegisterPropertyString('CustomName_hdmiarc', '');
@@ -148,12 +152,12 @@ class AMBEOSoundbar extends IPSModuleStrict
      */
     private function CreatePopcornPresentations(): void
     {
-        // Get available sources
-        $sources = $this->apiGetRows('ui:/inputs');
-        if ($sources !== null && isset($sources['rows'])) {
+        // Load and cache source list
+        $this->cachedSources = $this->apiGetRows('ui:/inputs');
+        if ($this->cachedSources !== null && isset($this->cachedSources['rows'])) {
             $options = [];
             $index = 0;
-            foreach ($sources['rows'] as $row) {
+            foreach ($this->cachedSources['rows'] as $row) {
                 if (isset($row['disabled']) && $row['disabled']) {
                     continue; // Skip disabled sources (e.g., Spotify)
                 }
@@ -175,12 +179,12 @@ class AMBEOSoundbar extends IPSModuleStrict
             $this->SetVariablePresentation('Source', VARIABLE_PRESENTATION_ENUMERATION, $options);
         }
 
-        // Get available presets
-        $presets = $this->apiGetRows('settings:/popcorn/audio/audioPresetValues');
-        if ($presets !== null && isset($presets['rows'])) {
+        // Load and cache preset list
+        $this->cachedPresets = $this->apiGetRows('settings:/popcorn/audio/audioPresetValues');
+        if ($this->cachedPresets !== null && isset($this->cachedPresets['rows'])) {
             $options = [];
             $index = 0;
-            foreach ($presets['rows'] as $row) {
+            foreach ($this->cachedPresets['rows'] as $row) {
                 $options[] = [
                     'Value' => $index,
                     'Caption' => $row['title'],
@@ -325,15 +329,14 @@ class AMBEOSoundbar extends IPSModuleStrict
             $this->SetValue('SoundFeedback', $soundFeedback['value']['bool_']);
         }
 
-        // Get current source and preset
+        // Get current source and preset (using cached lists)
         $currentSource = $this->apiGetData('popcorn:inputChange/selected');
-        if ($currentSource !== null) {
-            // Map source ID to index
+        if ($currentSource !== null && $this->cachedSources !== null) {
+            // Map source ID to index using cached list
             $sourceId = $currentSource['value']['popcornInputId'];
-            $sources = $this->apiGetRows('ui:/inputs');
-            if ($sources !== null && isset($sources['rows'])) {
+            if (isset($this->cachedSources['rows'])) {
                 $index = 0;
-                foreach ($sources['rows'] as $row) {
+                foreach ($this->cachedSources['rows'] as $row) {
                     if (isset($row['disabled']) && $row['disabled']) {
                         continue;
                     }
@@ -347,13 +350,12 @@ class AMBEOSoundbar extends IPSModuleStrict
         }
 
         $currentPreset = $this->apiGetData('settings:/popcorn/audio/audioPresets/audioPreset');
-        if ($currentPreset !== null) {
-            // Map preset ID to index
+        if ($currentPreset !== null && $this->cachedPresets !== null) {
+            // Map preset ID to index using cached list
             $presetId = $currentPreset['value']['popcornAudioPreset'];
-            $presets = $this->apiGetRows('settings:/popcorn/audio/audioPresetValues');
-            if ($presets !== null && isset($presets['rows'])) {
+            if (isset($this->cachedPresets['rows'])) {
                 $index = 0;
-                foreach ($presets['rows'] as $row) {
+                foreach ($this->cachedPresets['rows'] as $row) {
                     if ($row['value']['popcornAudioPreset'] === $presetId) {
                         $this->SetValue('Preset', $index);
                         break;
@@ -391,15 +393,14 @@ class AMBEOSoundbar extends IPSModuleStrict
      */
     private function SetSource(int $index): void
     {
-        // Get source path from index
-        $sources = $this->apiGetRows('ui:/inputs');
-        if ($sources === null || !isset($sources['rows'])) {
+        // Get source path from cached list
+        if ($this->cachedSources === null || !isset($this->cachedSources['rows'])) {
             return;
         }
 
         $currentIndex = 0;
         $path = null;
-        foreach ($sources['rows'] as $row) {
+        foreach ($this->cachedSources['rows'] as $row) {
             if (isset($row['disabled']) && $row['disabled']) {
                 continue;
             }
@@ -423,14 +424,13 @@ class AMBEOSoundbar extends IPSModuleStrict
      */
     private function SetPreset(int $index): void
     {
-        // Get preset ID from index
-        $presets = $this->apiGetRows('settings:/popcorn/audio/audioPresetValues');
-        if ($presets === null || !isset($presets['rows'])) {
+        // Get preset ID from cached list
+        if ($this->cachedPresets === null || !isset($this->cachedPresets['rows'])) {
             return;
         }
 
-        if (isset($presets['rows'][$index])) {
-            $presetId = $presets['rows'][$index]['value']['popcornAudioPreset'];
+        if (isset($this->cachedPresets['rows'][$index])) {
+            $presetId = $this->cachedPresets['rows'][$index]['value']['popcornAudioPreset'];
             $success = $this->apiSetData('settings:/popcorn/audio/audioPresets/audioPreset', 'popcornAudioPreset', $presetId);
             if ($success) {
                 $this->SetValue('Preset', $index);
