@@ -2,7 +2,7 @@
   "id": "{8F3A2E5D-9B1C-4F7E-A6D8-2C4B9E1F3A7D}",
   "name": "AMBEOSoundbar",
   "author": "Tim Kaufmann",
-  "url": "",
+  "url": "https://github.com/tkaufmann/ipsymcon-ambeo-soundbar",
   "compatibility": {
     "version": "8.0"
   },
