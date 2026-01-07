@@ -116,7 +116,8 @@ class AMBEOSoundbar extends IPSModuleStrict
     {
         $isPopcorn = str_contains($model, 'Plus') || str_contains($model, 'Mini');
 
-        // Register variables
+        // 1. Register variables WITHOUT profiles (profile via RegisterVariable sets
+        //    VariableProfile, but Mobile App needs VariableCustomProfile)
         $this->RegisterVariableInteger('Volume', 'Lautstärke', '~Intensity.100', 10);
         $this->RegisterVariableBoolean('Mute', 'Stumm', '~Switch', 20);
         $this->RegisterVariableInteger('Source', 'Eingang', '', 30);
@@ -126,7 +127,7 @@ class AMBEOSoundbar extends IPSModuleStrict
         $this->RegisterVariableBoolean('VoiceEnhancement', 'Sprachverbesserung', '~Switch', 70);
         $this->RegisterVariableBoolean('SoundFeedback', 'Sound-Feedback', '~Switch', 80);
 
-        // Enable actions for all variables
+        // 2. Enable actions for all variables
         $this->EnableAction('Volume');
         $this->EnableAction('Mute');
         $this->EnableAction('Source');
@@ -136,115 +137,135 @@ class AMBEOSoundbar extends IPSModuleStrict
         $this->EnableAction('VoiceEnhancement');
         $this->EnableAction('SoundFeedback');
 
-        // Create variable presentations (dropdowns for Source and Preset)
+        // 3. Create profiles and set VariableCustomProfile (for Mobile App) +
+        //    CustomPresentation (for Desktop WebFront)
         if ($isPopcorn) {
-            $this->CreatePopcornPresentations();
+            $this->SetupPopcornPresentations();
         } else {
-            $this->CreateEspressoPresentations();
+            $this->SetupEspressoPresentations();
         }
 
-        // Initial status update
+        // 4. Initial status update
         $this->UpdateStatus();
     }
 
     /**
-     * Create variable presentations for Popcorn API (Plus/Mini)
+     * Setup presentations for Popcorn API (Plus/Mini)
+     *
+     * Creates profiles and sets both VariableCustomProfile (for Mobile App)
+     * and CustomPresentation (for Desktop WebFront).
      */
-    private function CreatePopcornPresentations(): void
+    private function SetupPopcornPresentations(): void
     {
-        // Load and cache source list
+        // Load source list from API
         $this->cachedSources = $this->apiGetRows('ui:/inputs');
         if ($this->cachedSources !== null && isset($this->cachedSources['rows'])) {
             $options = [];
             $index = 0;
             foreach ($this->cachedSources['rows'] as $row) {
                 if (isset($row['disabled']) && $row['disabled']) {
-                    continue; // Skip disabled sources (e.g., Spotify)
+                    continue;
                 }
-
-                // Check for custom name, fallback to original title
                 $inputId = $row['id'] ?? '';
                 $customName = $this->ReadPropertyString("CustomName_{$inputId}");
                 $displayName = !empty($customName) ? $customName : $row['title'];
 
-                $options[] = [
-                    'Value' => $index,
-                    'Caption' => $displayName,
-                    'IconActive' => false,
-                    'IconValue' => ''
-                ];
+                $options[] = ['Value' => $index, 'Caption' => $displayName];
                 $index++;
             }
-
-            $this->SetVariablePresentation('Source', VARIABLE_PRESENTATION_ENUMERATION, $options);
+            $this->SetupVariablePresentation('Source', $options);
         }
 
-        // Load and cache preset list
+        // Load preset list from API
         $this->cachedPresets = $this->apiGetRows('settings:/popcorn/audio/audioPresetValues');
         if ($this->cachedPresets !== null && isset($this->cachedPresets['rows'])) {
             $options = [];
             $index = 0;
             foreach ($this->cachedPresets['rows'] as $row) {
-                $options[] = [
-                    'Value' => $index,
-                    'Caption' => $row['title'],
-                    'IconActive' => false,
-                    'IconValue' => ''
-                ];
+                $options[] = ['Value' => $index, 'Caption' => $row['title']];
                 $index++;
             }
-
-            $this->SetVariablePresentation('Preset', VARIABLE_PRESENTATION_ENUMERATION, $options);
+            $this->SetupVariablePresentation('Preset', $options);
         }
     }
 
     /**
-     * Create variable presentations for Espresso API (Max)
+     * Setup presentations for Espresso API (Max)
      */
-    private function CreateEspressoPresentations(): void
+    private function SetupEspressoPresentations(): void
     {
-        // Espresso uses integer IDs for sources
-        // For now, use placeholders - would need actual getRows implementation
-        $options = [
-            ['Value' => 0, 'Caption' => 'HDMI 1', 'IconActive' => false, 'IconValue' => ''],
-            ['Value' => 1, 'Caption' => 'HDMI 2', 'IconActive' => false, 'IconValue' => ''],
-            ['Value' => 2, 'Caption' => 'Optical', 'IconActive' => false, 'IconValue' => ''],
-            ['Value' => 3, 'Caption' => 'Bluetooth', 'IconActive' => false, 'IconValue' => '']
+        $sourceOptions = [
+            ['Value' => 0, 'Caption' => 'HDMI 1'],
+            ['Value' => 1, 'Caption' => 'HDMI 2'],
+            ['Value' => 2, 'Caption' => 'Optical'],
+            ['Value' => 3, 'Caption' => 'Bluetooth']
         ];
-        $this->SetVariablePresentation('Source', VARIABLE_PRESENTATION_ENUMERATION, $options);
+        $this->SetupVariablePresentation('Source', $sourceOptions);
 
-        // Espresso presets (hardcoded)
-        $options = [
-            ['Value' => 0, 'Caption' => 'Neutral', 'IconActive' => false, 'IconValue' => ''],
-            ['Value' => 1, 'Caption' => 'Movies', 'IconActive' => false, 'IconValue' => ''],
-            ['Value' => 2, 'Caption' => 'Sport', 'IconActive' => false, 'IconValue' => ''],
-            ['Value' => 3, 'Caption' => 'News', 'IconActive' => false, 'IconValue' => ''],
-            ['Value' => 4, 'Caption' => 'Music', 'IconActive' => false, 'IconValue' => '']
+        $presetOptions = [
+            ['Value' => 0, 'Caption' => 'Neutral'],
+            ['Value' => 1, 'Caption' => 'Movies'],
+            ['Value' => 2, 'Caption' => 'Sport'],
+            ['Value' => 3, 'Caption' => 'News'],
+            ['Value' => 4, 'Caption' => 'Music']
         ];
-        $this->SetVariablePresentation('Preset', VARIABLE_PRESENTATION_ENUMERATION, $options);
+        $this->SetupVariablePresentation('Preset', $presetOptions);
     }
 
     /**
-     * Set variable custom presentation
+     * Setup variable presentation with Mobile App compatibility
+     *
+     * Creates a legacy variable profile and assigns it via IPS_SetVariableCustomProfile
+     * (sets VariableCustomProfile, which Mobile App needs), plus sets
+     * IPS_SetVariableCustomPresentation for Desktop WebFront.
+     *
+     * IMPORTANT: Order matters! IPS_SetVariableCustomPresentation() clears VariableCustomProfile,
+     * so we must call SetCustomPresentation FIRST, then SetVariableCustomProfile.
      */
-    private function SetVariablePresentation(string $ident, string $presentation, array $options): void
+    private function SetupVariablePresentation(string $ident, array $options): void
     {
         $varID = @$this->GetIDForIdent($ident);
-
         if ($varID === false || $varID === 0) {
-            $this->SendDebug('SetVariablePresentation', "Variable '{$ident}' not found", 0);
             return;
         }
 
-        // IPS_SetVariableCustomPresentation expects:
-        // - PRESENTATION as GUID constant
-        // - OPTIONS as JSON-encoded string
-        $presentationConfig = [
-            'PRESENTATION' => $presentation,
-            'OPTIONS' => json_encode($options)
-        ];
+        $profileName = "AMBEOSoundbar.{$ident}." . $this->InstanceID;
 
-        IPS_SetVariableCustomPresentation($varID, $presentationConfig);
+        // 1. Create/update legacy profile
+        if (IPS_VariableProfileExists($profileName)) {
+            IPS_DeleteVariableProfile($profileName);
+        }
+        IPS_CreateVariableProfile($profileName, VARIABLETYPE_INTEGER);
+
+        foreach ($options as $option) {
+            IPS_SetVariableProfileAssociation(
+                $profileName,
+                $option['Value'],
+                $option['Caption'],
+                '',
+                -1
+            );
+        }
+
+        // 2. FIRST set CustomPresentation for Desktop WebFront
+        //    (MUST be before SetVariableCustomProfile, because SetCustomPresentation clears CustomProfile!)
+        $presentationOptions = array_map(function ($opt) {
+            return [
+                'Value' => $opt['Value'],
+                'Caption' => $opt['Caption'],
+                'IconActive' => false,
+                'IconValue' => ''
+            ];
+        }, $options);
+
+        IPS_SetVariableCustomPresentation($varID, [
+            'PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION,
+            'OPTIONS' => json_encode($presentationOptions)
+        ]);
+
+        // 3. THEN assign profile via CustomProfile (sets VariableCustomProfile for Mobile App)
+        //    This must come AFTER SetCustomPresentation!
+        IPS_SetVariableCustomProfile($varID, $profileName);
     }
 
     /**
