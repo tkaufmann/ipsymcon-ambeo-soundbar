@@ -7,23 +7,23 @@
     {
       "type": "ValidationTextBox",
       "name": "Host",
-      "caption": "Hostname / IP-Adresse"
+      "caption": "Hostname / IP Address"
     },
     {
       "type": "NumberSpinner",
       "name": "UpdateInterval",
-      "caption": "Update-Intervall (Sekunden)",
+      "caption": "Update Interval (Seconds)",
       "minimum": 1,
       "maximum": 60,
-      "suffix": "Sekunden"
+      "suffix": "Seconds"
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Namen der Eingänge überschreiben",
+      "caption": "Override Input Names",
       "items": [
         {
           "type": "Label",
-          "label": "Leer lassen für Standardnamen",
+          "label": "Leave empty for default names",
           "italic": true
         },
         {
@@ -44,7 +44,7 @@
         {
           "type": "ValidationTextBox",
           "name": "CustomName_spdif",
-          "caption": "Optisch"
+          "caption": "Optical"
         },
         {
           "type": "ValidationTextBox",
@@ -64,7 +64,7 @@
     },
     {
       "type": "Label",
-      "label": "Erkanntes Modell:",
+      "label": "Detected Model:",
       "bold": true
     },
     {
@@ -76,7 +76,7 @@
   "actions": [
     {
       "type": "Button",
-      "label": "Status aktualisieren",
+      "label": "Update Status",
       "onClick": "AMB_UpdateStatus($id);"
     }
   ],
@@ -84,27 +84,27 @@
     {
       "code": 101,
       "icon": "inactive",
-      "caption": "Instanz wird erstellt..."
+      "caption": "Instance is being created..."
     },
     {
       "code": 102,
       "icon": "active",
-      "caption": "Soundbar verbunden"
+      "caption": "Soundbar connected"
     },
     {
       "code": 200,
       "icon": "error",
-      "caption": "Hostname/IP-Adresse nicht angegeben"
+      "caption": "Hostname/IP address not specified"
     },
     {
       "code": 201,
       "icon": "error",
-      "caption": "Verbindung fehlgeschlagen - Soundbar nicht erreichbar"
+      "caption": "Connection failed - Soundbar not reachable"
     },
     {
       "code": 202,
       "icon": "error",
-      "caption": "Ungültige Response von Soundbar"
+      "caption": "Invalid response from Soundbar"
     }
   ]
 }

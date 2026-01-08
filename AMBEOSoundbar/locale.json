@@ -1,0 +1,33 @@
+{
+    "translations": {
+        "de": {
+            "Sennheiser AMBEO Soundbar": "Sennheiser AMBEO Soundbar",
+            "Hostname / IP Address": "Hostname / IP-Adresse",
+            "Update Interval (Seconds)": "Update-Intervall (Sekunden)",
+            "Seconds": "Sekunden",
+            "Override Input Names": "Namen der Eingänge überschreiben",
+            "Leave empty for default names": "Leer lassen für Standardnamen",
+            "HDMI TV": "HDMI TV",
+            "HDMI 1": "HDMI 1",
+            "HDMI 2": "HDMI 2",
+            "Optical": "Optisch",
+            "AUX": "AUX",
+            "Bluetooth": "Bluetooth",
+            "Detected Model:": "Erkanntes Modell:",
+            "Update Status": "Status aktualisieren",
+            "Instance is being created...": "Instanz wird erstellt...",
+            "Soundbar connected": "Soundbar verbunden",
+            "Hostname/IP address not specified": "Hostname/IP-Adresse nicht angegeben",
+            "Connection failed - Soundbar not reachable": "Verbindung fehlgeschlagen - Soundbar nicht erreichbar",
+            "Invalid response from Soundbar": "Ungültige Response von Soundbar",
+            "Volume": "Lautstärke",
+            "Mute": "Stumm",
+            "Input": "Eingang",
+            "Audio Preset": "Audio-Preset",
+            "Night Mode": "Nachtmodus",
+            "AMBEO Mode": "AMBEO Modus",
+            "Voice Enhancement": "Sprachverbesserung",
+            "Sound Feedback": "Sound-Feedback"
+        }
+    }
+}

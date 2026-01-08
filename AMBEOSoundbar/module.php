@@ -44,6 +44,18 @@ class AMBEOSoundbar extends IPSModuleStrict
     }
 
     /**
+     * Destroy() - Called when instance is deleted
+     */
+    public function Destroy(): void
+    {
+        // Clean up instance-specific profiles
+        $this->DeleteProfileIfExists('AMBEOSoundbar.Source.' . $this->InstanceID);
+        $this->DeleteProfileIfExists('AMBEOSoundbar.Preset.' . $this->InstanceID);
+
+        parent::Destroy();
+    }
+
+    /**
      * GetConfigurationForm() - Called when configuration form is opened
      */
     public function GetConfigurationForm(): string
@@ -110,24 +122,37 @@ class AMBEOSoundbar extends IPSModuleStrict
     }
 
     /**
-     * Initialize module - create variables and presentations
+     * Initialize module - create variables and profiles
      */
     private function InitializeModule(string $model): void
     {
         $isPopcorn = str_contains($model, 'Plus') || str_contains($model, 'Mini');
 
-        // 1. Register variables WITHOUT profiles (profile via RegisterVariable sets
-        //    VariableProfile, but Mobile App needs VariableCustomProfile)
-        $this->RegisterVariableInteger('Volume', 'Lautstärke', '~Intensity.100', 10);
-        $this->RegisterVariableBoolean('Mute', 'Stumm', '~Switch', 20);
-        $this->RegisterVariableInteger('Source', 'Eingang', '', 30);
-        $this->RegisterVariableInteger('Preset', 'Audio-Preset', '', 40);
-        $this->RegisterVariableBoolean('NightMode', 'Nachtmodus', '~Switch', 50);
-        $this->RegisterVariableBoolean('AMBEOMode', 'AMBEO Modus', '~Switch', 60);
-        $this->RegisterVariableBoolean('VoiceEnhancement', 'Sprachverbesserung', '~Switch', 70);
-        $this->RegisterVariableBoolean('SoundFeedback', 'Sound-Feedback', '~Switch', 80);
+        // 1. Create profiles for Source and Preset (must be done BEFORE RegisterVariable)
+        if ($isPopcorn) {
+            $sourceProfile = $this->CreatePopcornSourceProfile();
+            $presetProfile = $this->CreatePopcornPresetProfile();
+        } else {
+            $sourceProfile = $this->CreateEspressoSourceProfile();
+            $presetProfile = $this->CreateEspressoPresetProfile();
+        }
 
-        // 2. Enable actions for all variables
+        // 2. Register variables with profiles
+        // Standard profiles for common controls
+        $this->RegisterVariableInteger('Volume', $this->Translate('Volume'), '~Intensity.100', 10);
+        $this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), '~Switch', 20);
+
+        // Custom profiles for Source and Preset (dynamic values from API)
+        $this->RegisterVariableInteger('Source', $this->Translate('Input'), $sourceProfile, 30);
+        $this->RegisterVariableInteger('Preset', $this->Translate('Audio Preset'), $presetProfile, 40);
+
+        // Standard profiles for switches
+        $this->RegisterVariableBoolean('NightMode', $this->Translate('Night Mode'), '~Switch', 50);
+        $this->RegisterVariableBoolean('AMBEOMode', $this->Translate('AMBEO Mode'), '~Switch', 60);
+        $this->RegisterVariableBoolean('VoiceEnhancement', $this->Translate('Voice Enhancement'), '~Switch', 70);
+        $this->RegisterVariableBoolean('SoundFeedback', $this->Translate('Sound Feedback'), '~Switch', 80);
+
+        // 3. Enable actions for all variables
         $this->EnableAction('Volume');
         $this->EnableAction('Mute');
         $this->EnableAction('Source');
@@ -137,30 +162,25 @@ class AMBEOSoundbar extends IPSModuleStrict
         $this->EnableAction('VoiceEnhancement');
         $this->EnableAction('SoundFeedback');
 
-        // 3. Create profiles and set VariableCustomProfile (for Mobile App) +
-        //    CustomPresentation (for Desktop WebFront)
-        if ($isPopcorn) {
-            $this->SetupPopcornPresentations();
-        } else {
-            $this->SetupEspressoPresentations();
-        }
-
         // 4. Initial status update
         $this->UpdateStatus();
     }
 
     /**
-     * Setup presentations for Popcorn API (Plus/Mini)
-     *
-     * Creates profiles and sets both VariableCustomProfile (for Mobile App)
-     * and CustomPresentation (for Desktop WebFront).
+     * Create Source profile for Popcorn API (Plus/Mini)
      */
-    private function SetupPopcornPresentations(): void
+    private function CreatePopcornSourceProfile(): string
     {
+        $profileName = 'AMBEOSoundbar.Source.' . $this->InstanceID;
+
         // Load source list from API
         $this->cachedSources = $this->apiGetRows('ui:/inputs');
+
+        // Delete existing profile to update associations
+        $this->DeleteProfileIfExists($profileName);
+        IPS_CreateVariableProfile($profileName, VARIABLETYPE_INTEGER);
+
         if ($this->cachedSources !== null && isset($this->cachedSources['rows'])) {
-            $options = [];
             $index = 0;
             foreach ($this->cachedSources['rows'] as $row) {
                 if (isset($row['disabled']) && $row['disabled']) {
@@ -170,102 +190,105 @@ class AMBEOSoundbar extends IPSModuleStrict
                 $customName = $this->ReadPropertyString("CustomName_{$inputId}");
                 $displayName = !empty($customName) ? $customName : $row['title'];
 
-                $options[] = ['Value' => $index, 'Caption' => $displayName];
+                IPS_SetVariableProfileAssociation($profileName, $index, $displayName, '', -1);
                 $index++;
             }
-            $this->SetupVariablePresentation('Source', $options);
         }
+
+        return $profileName;
+    }
+
+    /**
+     * Create Preset profile for Popcorn API (Plus/Mini)
+     */
+    private function CreatePopcornPresetProfile(): string
+    {
+        $profileName = 'AMBEOSoundbar.Preset.' . $this->InstanceID;
 
         // Load preset list from API
         $this->cachedPresets = $this->apiGetRows('settings:/popcorn/audio/audioPresetValues');
+
+        // Delete existing profile to update associations
+        $this->DeleteProfileIfExists($profileName);
+        IPS_CreateVariableProfile($profileName, VARIABLETYPE_INTEGER);
+
         if ($this->cachedPresets !== null && isset($this->cachedPresets['rows'])) {
-            $options = [];
             $index = 0;
             foreach ($this->cachedPresets['rows'] as $row) {
-                $options[] = ['Value' => $index, 'Caption' => $row['title']];
+                IPS_SetVariableProfileAssociation($profileName, $index, $row['title'], '', -1);
                 $index++;
             }
-            $this->SetupVariablePresentation('Preset', $options);
         }
+
+        return $profileName;
     }
 
     /**
-     * Setup presentations for Espresso API (Max)
+     * Create Source profile for Espresso API (Max)
      */
-    private function SetupEspressoPresentations(): void
+    private function CreateEspressoSourceProfile(): string
     {
-        $sourceOptions = [
-            ['Value' => 0, 'Caption' => 'HDMI 1'],
-            ['Value' => 1, 'Caption' => 'HDMI 2'],
-            ['Value' => 2, 'Caption' => 'Optical'],
-            ['Value' => 3, 'Caption' => 'Bluetooth']
-        ];
-        $this->SetupVariablePresentation('Source', $sourceOptions);
+        $profileName = 'AMBEOSoundbar.Source.' . $this->InstanceID;
 
-        $presetOptions = [
-            ['Value' => 0, 'Caption' => 'Neutral'],
-            ['Value' => 1, 'Caption' => 'Movies'],
-            ['Value' => 2, 'Caption' => 'Sport'],
-            ['Value' => 3, 'Caption' => 'News'],
-            ['Value' => 4, 'Caption' => 'Music']
+        $this->DeleteProfileIfExists($profileName);
+        IPS_CreateVariableProfile($profileName, VARIABLETYPE_INTEGER);
+
+        IPS_SetVariableProfileAssociation($profileName, 0, 'HDMI 1', '', -1);
+        IPS_SetVariableProfileAssociation($profileName, 1, 'HDMI 2', '', -1);
+        IPS_SetVariableProfileAssociation($profileName, 2, $this->Translate('Optical'), '', -1);
+        IPS_SetVariableProfileAssociation($profileName, 3, 'Bluetooth', '', -1);
+
+        // Initialize cache for Espresso
+        $this->cachedSources = [
+            'rows' => [
+                ['id' => 'hdmi1', 'title' => 'HDMI 1'],
+                ['id' => 'hdmi2', 'title' => 'HDMI 2'],
+                ['id' => 'spdif', 'title' => 'Optical'],
+                ['id' => 'bluetooth', 'title' => 'Bluetooth']
+            ]
         ];
-        $this->SetupVariablePresentation('Preset', $presetOptions);
+
+        return $profileName;
     }
 
     /**
-     * Setup variable presentation with Mobile App compatibility
-     *
-     * Creates a legacy variable profile and assigns it via IPS_SetVariableCustomProfile
-     * (sets VariableCustomProfile, which Mobile App needs), plus sets
-     * IPS_SetVariableCustomPresentation for Desktop WebFront.
-     *
-     * IMPORTANT: Order matters! IPS_SetVariableCustomPresentation() clears VariableCustomProfile,
-     * so we must call SetCustomPresentation FIRST, then SetVariableCustomProfile.
+     * Create Preset profile for Espresso API (Max)
      */
-    private function SetupVariablePresentation(string $ident, array $options): void
+    private function CreateEspressoPresetProfile(): string
     {
-        $varID = @$this->GetIDForIdent($ident);
-        if ($varID === false || $varID === 0) {
-            return;
-        }
+        $profileName = 'AMBEOSoundbar.Preset.' . $this->InstanceID;
 
-        $profileName = "AMBEOSoundbar.{$ident}." . $this->InstanceID;
+        $this->DeleteProfileIfExists($profileName);
+        IPS_CreateVariableProfile($profileName, VARIABLETYPE_INTEGER);
 
-        // 1. Create/update legacy profile
+        IPS_SetVariableProfileAssociation($profileName, 0, 'Neutral', '', -1);
+        IPS_SetVariableProfileAssociation($profileName, 1, 'Movies', '', -1);
+        IPS_SetVariableProfileAssociation($profileName, 2, 'Sport', '', -1);
+        IPS_SetVariableProfileAssociation($profileName, 3, 'News', '', -1);
+        IPS_SetVariableProfileAssociation($profileName, 4, 'Music', '', -1);
+
+        // Initialize cache for Espresso
+        $this->cachedPresets = [
+            'rows' => [
+                ['value' => ['popcornAudioPreset' => 'neutral'], 'title' => 'Neutral'],
+                ['value' => ['popcornAudioPreset' => 'movies'], 'title' => 'Movies'],
+                ['value' => ['popcornAudioPreset' => 'sport'], 'title' => 'Sport'],
+                ['value' => ['popcornAudioPreset' => 'news'], 'title' => 'News'],
+                ['value' => ['popcornAudioPreset' => 'music'], 'title' => 'Music']
+            ]
+        ];
+
+        return $profileName;
+    }
+
+    /**
+     * Delete a variable profile if it exists
+     */
+    private function DeleteProfileIfExists(string $profileName): void
+    {
         if (IPS_VariableProfileExists($profileName)) {
             IPS_DeleteVariableProfile($profileName);
         }
-        IPS_CreateVariableProfile($profileName, VARIABLETYPE_INTEGER);
-
-        foreach ($options as $option) {
-            IPS_SetVariableProfileAssociation(
-                $profileName,
-                $option['Value'],
-                $option['Caption'],
-                '',
-                -1
-            );
-        }
-
-        // 2. FIRST set CustomPresentation for Desktop WebFront
-        //    (MUST be before SetVariableCustomProfile, because SetCustomPresentation clears CustomProfile!)
-        $presentationOptions = array_map(function ($opt) {
-            return [
-                'Value' => $opt['Value'],
-                'Caption' => $opt['Caption'],
-                'IconActive' => false,
-                'IconValue' => ''
-            ];
-        }, $options);
-
-        IPS_SetVariableCustomPresentation($varID, [
-            'PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION,
-            'OPTIONS' => json_encode($presentationOptions)
-        ]);
-
-        // 3. THEN assign profile via CustomProfile (sets VariableCustomProfile for Mobile App)
-        //    This must come AFTER SetCustomPresentation!
-        IPS_SetVariableCustomProfile($varID, $profileName);
     }
 
     /**
